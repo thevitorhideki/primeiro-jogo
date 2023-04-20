@@ -10,12 +10,14 @@ pygame.display.set_caption("My Game")
 clock = pygame.time.Clock()
 font = pygame.font.Font('font/Pixeltype.ttf', 50)
 
-sky = pygame.image.load('assets/Sky.png').convert_alpha()
-ground = pygame.image.load('assets/ground.png').convert_alpha()
-text = font.render("Lesma (Fofinha) Andando", True, 'green')
+sky = pygame.image.load('assets/Sky.png').convert()
+ground = pygame.image.load('assets/ground.png').convert()
 
 snail = pygame.image.load('assets/snail/snail1.png').convert_alpha()
-snail_x_pos = 800
+snail_rect = snail.get_rect(bottomright=(800, HEIGHT - 100))
+
+player = pygame.image.load('assets/Player/player_walk_1.png').convert_alpha()
+player_rect = player.get_rect(midbottom=(80, 300))
 
 while True:
     for event in pygame.event.get():
@@ -25,11 +27,11 @@ while True:
 
     screen.blit(sky, (0, 0))
     screen.blit(ground, (0, HEIGHT - 100))
-    screen.blit(text, (220, 50))
-    snail_x_pos -= 2
-    if snail_x_pos < -100:
-        snail_x_pos = 800
-    screen.blit(snail, (snail_x_pos, HEIGHT - 135))
+    snail_rect.left -= 2
+    if snail_rect.right < 0:
+        snail_rect.left = 800
+    screen.blit(snail, snail_rect)
+    screen.blit(player, player_rect)
 
     pygame.display.update()
     clock.tick(60)
