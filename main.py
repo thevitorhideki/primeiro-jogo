@@ -1,9 +1,18 @@
 import pygame
 from sys import exit
 
+
+def display_score():
+    current_time = int(pygame.time.get_ticks() / 1000) - start_time
+    score = font.render(f'Score: {current_time}', False, (64, 64, 64))
+    score_rect = score.get_rect(center=(WIDTH / 2, 50))
+    screen.blit(score, score_rect)
+
+
 WIDTH = 800
 HEIGHT = 400
 playing = True
+start_time = 0
 
 pygame.init()
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -14,9 +23,6 @@ font = pygame.font.Font('font/Pixeltype.ttf', 50)
 sky = pygame.image.load('assets/Sky.png').convert()
 ground = pygame.image.load('assets/ground.png').convert()
 
-score = font.render("Score: ", True, (64, 64, 64))
-score_rect = score.get_rect(center=(WIDTH / 2, 50))
-
 snail = pygame.image.load('assets/snail/snail1.png').convert_alpha()
 snail_rect = snail.get_rect(bottomright=(800, HEIGHT - 100))
 
@@ -25,6 +31,7 @@ player_rect = player.get_rect(midbottom=(80, 300))
 player_name = font.render('Caio', True, 'Black')
 player_name_rect = player_name.get_rect(midbottom=(player_rect.midtop))
 player_gravity = 0
+turn_around = True
 
 while True:
     for event in pygame.event.get():
@@ -40,10 +47,19 @@ while True:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and player_rect.bottom == 300:
                     player_gravity = -20
+                elif event.key == pygame.K_a and turn_around:
+                    player = pygame.transform.flip(player, True, False)
+                    turn_around = False
+                elif event.key == pygame.K_d and turn_around == False:
+                    player = pygame.transform.flip(player, True, False)
+                    turn_around = True
         else:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_r:
                 playing = True
                 snail_rect.right = 800
+                player_rect.left = 80
+                player_name_rect.left = 80
+                start_time = int(pygame.time.get_ticks() / 1000)
 
     if playing:
         # Background
@@ -51,9 +67,7 @@ while True:
         screen.blit(ground, (0, 300))
 
         # Score
-        pygame.draw.rect(screen, '#c0e8ec', score_rect)
-        pygame.draw.rect(screen, '#c0e8ec', score_rect, 10)
-        screen.blit(score, score_rect)
+        display_score()
 
         # Snail
         snail_rect.left -= 2
