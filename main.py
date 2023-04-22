@@ -37,6 +37,16 @@ def collisions(player, obstacles):
     return True
 
 
+def player_animation():
+    global player, player_index
+
+    if player_rect.bottom < 300:
+        player = player_jump
+    else:
+        player_index += 0.1
+        player = player_walk[int(player_index % len(player_walk))]
+
+
 WIDTH = 800
 HEIGHT = 400
 playing = False
@@ -58,18 +68,36 @@ game_name_rect = game_name.get_rect(center=(WIDTH / 2, 50))
 restart = font.render('Press space to run', False, (111, 196, 169))
 restart_rect = restart.get_rect(center=(WIDTH / 2, 350))
 
-# Obstacles
-snail = pygame.image.load('assets/snail/snail1.png').convert_alpha()
-fly = pygame.image.load('assets/Fly/Fly1.png').convert_alpha()
+# Snail
+snail1 = pygame.image.load('assets/snail/snail1.png').convert_alpha()
+snail2 = pygame.image.load('assets/snail/snail2.png').convert_alpha()
+snail_frames = [snail1, snail2]
+snail_index = 0
+snail = snail_frames[snail_index]
+
+# Fly
+fly1 = pygame.image.load('assets/Fly/Fly1.png').convert_alpha()
+fly2 = pygame.image.load('assets/Fly/Fly2.png').convert_alpha()
+fly_frames = [fly1, fly2]
+fly_index = 0
+fly = fly_frames[fly_index]
 
 obstacle_rect_list = []
 
-player = pygame.image.load('assets/Player/player_walk_1.png').convert_alpha()
-player_rect = player.get_rect(midbottom=(80, 300))
+player_wal1 = pygame.image.load(
+    'assets/Player/player_walk_1.png').convert_alpha()
+player_wal2 = pygame.image.load(
+    'assets/Player/player_walk_2.png').convert_alpha()
+player_walk = [player_wal1, player_wal2]
+player_index = 0
+player_jump = pygame.image.load('assets/Player/jump.png').convert_alpha()
+
+player = player_walk[player_index]
+player_rect = player_wal1.get_rect(midbottom=(80, 300))
+player_gravity = 0
+
 player_name = font.render('Caio', True, 'Black')
 player_name_rect = player_name.get_rect(midbottom=(player_rect.midtop))
-player_gravity = 0
-turn_around = True
 
 player_stand = pygame.image.load(
     'assets/Player/player_stand.png').convert_alpha()
@@ -81,6 +109,12 @@ player_stand_rect = player_stand.get_rect(
 obstacle_timer = pygame.USEREVENT + 1
 pygame.time.set_timer(obstacle_timer, 1500)
 
+snail_timer = pygame.USEREVENT + 2
+pygame.time.set_timer(snail_timer, 300)
+
+fly_timer = pygame.USEREVENT + 3
+pygame.time.set_timer(fly_timer, 200)
+
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -91,12 +125,6 @@ while True:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE and player_rect.bottom == 300:
                     player_gravity = -20
-                if event.key == pygame.K_a and turn_around:
-                    player = pygame.transform.flip(player, True, False)
-                    turn_around = False
-                if event.key == pygame.K_d and turn_around == False:
-                    player = pygame.transform.flip(player, True, False)
-                    turn_around = True
             if event.type == obstacle_timer:
                 if randint(0, 2):
                     obstacle_rect_list.append(
@@ -104,13 +132,16 @@ while True:
                 else:
                     obstacle_rect_list.append(
                         snail.get_rect(bottomright=(randint(900, 1100), 300)))
+            if event.type == snail_timer:
+                snail_index += 1
+                snail = snail_frames[int(snail_index % len(snail_frames))]
+            if event.type == fly_timer:
+                fly_index += 1
+                fly = fly_frames[int(fly_index % len(fly_frames))]
         else:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE:
                 playing = True
                 start_time = int(pygame.time.get_ticks() / 1000)
-                if turn_around == False:
-                    player = pygame.transform.flip(player, True, False)
-                    turn_around = True
 
     if playing:
         # Background
@@ -129,17 +160,9 @@ while True:
             player_name_rect.bottom = player_rect.midtop[1]
             player_gravity = 0
 
+        player_animation()
         screen.blit(player, player_rect)
         screen.blit(player_name, player_name_rect)
-
-        # Move player
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_a]:
-            player_rect.x -= 3
-            player_name_rect.x -= 3
-        if keys[pygame.K_d]:
-            player_rect.x += 3
-            player_name_rect.x += 3
 
         # Obstacle movement
         obstacle_rect_list = obstacle_movement(obstacle_rect_list)
